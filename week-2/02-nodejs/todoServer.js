@@ -43,7 +43,55 @@ const express = require("express");
 const bodyParser = require("body-parser");
 
 const app = express();
+app.use(express.urlencoded({ extended: false }));
+let data = [];
 
 app.use(bodyParser.json());
 
+app.get("/todos", (req, res) => {
+  res.status(200).send(data);
+});
+
+app.get("/todos/:id", (req, res) => {
+  const id = req.params.id * 1;
+  const user = data.find((element) => element.id === id);
+  if (!user) {
+    return res.status(404).send();
+  }
+  res.status(200).send(user);
+});
+
+app.post("/todos", (req, res) => {
+  const nId = Math.floor(Math.random() * 1000000);
+  const body = req.body;
+  const element = {
+    id: nId,
+    ...body,
+  };
+  data.push(element);
+  res.status(201).json(element);
+});
+
+app.put("/todos/:id", (req, res) => {
+  const id = req.params.id * 1;
+  const updatedData = req.body;
+  const reqElement = data.find((el) => el.id === id);
+  if (!reqElement) {
+    return res.status(404).send("invalid id");
+  }
+  Object.assign(reqElement, updatedData);
+  res.status(200).json(reqElement);
+});
+
+app.delete("/todos/:id", (req, res) => {
+  const id = req.params.id * 1;
+  const index = data.findIndex((el) => el.id === id);
+  if (index === -1) {
+    return res.status(404).send("invalid id");
+  }
+  data.splice(index, 1);
+  res.status(200).json({ message: "deleted" });
+});
+
 module.exports = app;
+// app.listen(3000, () => console.log("started"));
